@@ -1,0 +1,6 @@
+__pycache__/
+.vscode/
+BUILD/
+main_backup.cpp
+mbed_settings.py
+mbed-os.lib
