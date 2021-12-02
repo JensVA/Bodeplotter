@@ -11,7 +11,7 @@ DigitalOut IN_AMP_4(PA_11);
 DigitalOut IN_AMP_10(PB_12);
 DigitalOut IN_AMP_100(PB_11);
 DigitalOut CAP_DIS(PC_5);
-SPI SPI_ADC(PB_5, NC, PB_3); // mosi (niet gebruikt), miso , sclk
+SPI SPI_ADC(NC, PB_4, PB_3); // mosi (niet gebruikt), miso , sclk
 DigitalOut CS_ADC(PA_10);
 
 using namespace std;
@@ -29,7 +29,17 @@ int main() {
   bodeplotter.discharge_CAP();
   bodeplotter.set_DDS_AMP(1);
   bodeplotter.set_IN_AMP(1);
-  bodeplotter.setFrequency_DDS(10000);
-
+  //bodeplotter.setFrequency_DDS(1000);
+  //bodeplotter.sweep_DDS(100, 1, 100000);
+  bodeplotter.sweep_DDS(200, 15, 200);
+  while(1) {
+    
+    //bodeplotter.discharge_CAP();
+    //wait_us(10000);
+    //bodeplotter.sweep_DDS(100, 10, 10000);
+    //printf("%fV\n", bodeplotter.getVoltage_ADC());
+    //wait_us(10000);
+    //wait_us(5000000);
+  }
   return 0;
 }

@@ -37,9 +37,16 @@ namespace Elektronica {
     float log_range =  log10(max_frequency/min_frequency);
     float min_value = log10(min_frequency);
     for(int i = 0; i <= log_range*steps; i++) {
-        uint32_t frequency = pow(10, (min_value+((i/(log_range*steps)))*log_range));
+        float frequency = pow(10, (min_value+((i/(log_range*steps)))*log_range));
         setFrequency_DDS(frequency);
-        wait_us(100000);
+        set_DDS_AMP(2);
+        set_IN_AMP(1);
+        discharge_CAP();  //5ms delay
+        wait_us(50000);
+        wait_us(5*(1/frequency)*1000000); //wait 4 periods before ADC
+        float voltage = getVoltage_ADC();
+        float hf = 20 * log10((voltage/2)/0.3);
+        printf("%f %f\n", frequency, hf);
     }
   }
 
@@ -182,9 +189,18 @@ namespace Elektronica {
   float Bodeplot::getVoltage_ADC(void) {
     CS_ADC->write(0);
 
+    // char txHIGH[2] = {0x0, 0x0};
+    // uint8_t high = SPI_ADC->write(txHIGH, 2, nullptr, 0);
+    // char txLOW[2] = {0x0, 0x0};
+    // uint8_t low = SPI_ADC->write(txLOW, 2, nullptr, 0);
+
     // ? ? 0 B11 B10 B9 B8 B7 | B6 B5 B4 B3 B2 B1 B0 B1
     uint8_t high = SPI_ADC->write(0x00);
     uint8_t low = SPI_ADC->write(0x00);
+    
+    CS_ADC->write(1);
+    //printf("High voltage: %d\n", high);
+    //printf("Low voltage: %d\n", low);
 
     high = high & 0x1F; // clear unkown bits
     low = low >> 1;     // shift low 1 to the right to get rid of the extra B1
@@ -193,8 +209,6 @@ namespace Elektronica {
     
     uint16_t d_out = ( high << 8 ) | low; //add high and low together
     float voltage = (d_out * 3.3) / 4096;
-
-    CS_ADC->write(1);
 
     return voltage;
   }
