@@ -7,14 +7,13 @@ namespace Elektronica {
     this->SPI_DDS = SPI_DDS;
     this->CS_DDS = CS_DDS;
     CS_DDS->write(1);
-    SPI_DDS->format(8,2);   //16 bits + Mode 1 (bit sample op falling edge) 
+    SPI_DDS->format(8,2);
     SPI_DDS->frequency(1000000);
   }
 
   void Bodeplot::setFrequency_DDS(float frequency) {
     uint32_t FREQREG = frequency / 0.05960464477;
 
-    // 0000 | 0000 0000 0000 00|00 0000 0000 0000S
     uint16_t LSB_frequency = FREQREG & 0x00003FFF;
     uint16_t MSB_frequency = (FREQREG >> 14) & 0x00003FFF;
     
@@ -37,13 +36,13 @@ namespace Elektronica {
     float log_range =  log10(max_frequency/min_frequency);
     float min_value = log10(min_frequency);
     for(int i = 0; i <= log_range*steps; i++) {
-        float frequency = pow(10, (min_value+((i/(log_range*steps)))*log_range));
+        float frequency = pow(10, min_value+(i/steps));
         setFrequency_DDS(frequency);
         set_DDS_AMP(2);
         set_IN_AMP(1);
-        discharge_CAP();  //5ms delay
+        discharge_CAP();
         wait_us(50000);
-        wait_us(5*(1/frequency)*1000000); //wait 4 periods before ADC
+        wait_us(5*(1/frequency)*1000000);
         float voltage = getVoltage_ADC();
         float hf = 20 * log10((voltage/2)/0.3);
         printf("%f %f\n", frequency, hf);
@@ -189,25 +188,17 @@ namespace Elektronica {
   float Bodeplot::getVoltage_ADC(void) {
     CS_ADC->write(0);
 
-    // char txHIGH[2] = {0x0, 0x0};
-    // uint8_t high = SPI_ADC->write(txHIGH, 2, nullptr, 0);
-    // char txLOW[2] = {0x0, 0x0};
-    // uint8_t low = SPI_ADC->write(txLOW, 2, nullptr, 0);
-
-    // ? ? 0 B11 B10 B9 B8 B7 | B6 B5 B4 B3 B2 B1 B0 B1
     uint8_t high = SPI_ADC->write(0x00);
     uint8_t low = SPI_ADC->write(0x00);
     
     CS_ADC->write(1);
-    //printf("High voltage: %d\n", high);
-    //printf("Low voltage: %d\n", low);
 
-    high = high & 0x1F; // clear unkown bits
-    low = low >> 1;     // shift low 1 to the right to get rid of the extra B1
-    low = low | ((high & 0x01) << 7); //take the first bit from high and add it to low
-    high = high >> 1; //shift high 1 to the right
+    high = high & 0x1F;
+    low = low >> 1;
+    low = low | ((high & 0x01) << 7);
+    high = high >> 1;
     
-    uint16_t d_out = ( high << 8 ) | low; //add high and low together
+    uint16_t d_out = ( high << 8 ) | low;
     float voltage = (d_out * 3.3) / 4096;
 
     return voltage;

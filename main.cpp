@@ -25,7 +25,7 @@ int main() {
   bodeplotter.initialize_CAP_DIS(&CAP_DIS);
   bodeplotter.initialize_DDS_AMP(&DDS_AMP_A1, &DDS_AMP_A0);
   bodeplotter.initialize_IN_AMP(&IN_AMP_2, &IN_AMP_4, &IN_AMP_10, &IN_AMP_100);
-  //-------code--------
+  //-------test-code--------
   bodeplotter.discharge_CAP();
   bodeplotter.set_DDS_AMP(1);
   bodeplotter.set_IN_AMP(1);
@@ -33,7 +33,6 @@ int main() {
   //bodeplotter.sweep_DDS(100, 1, 100000);
   bodeplotter.sweep_DDS(200, 15, 200);
   while(1) {
-    
     //bodeplotter.discharge_CAP();
     //wait_us(10000);
     //bodeplotter.sweep_DDS(100, 10, 10000);
